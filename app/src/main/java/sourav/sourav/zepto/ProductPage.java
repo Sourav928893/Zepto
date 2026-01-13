@@ -9,6 +9,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -30,36 +31,22 @@ public class ProductPage extends AppCompatActivity {
     private ProductAdapter productAdapter;
     private List<Product> productList;
     private List<Product> filteredList;
+    private DatabaseHelper dbHelper;
 
     @SuppressLint("MissingInflatedId")
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState); // Explicit call to super
+        super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_product_page);
 
-
+        dbHelper = new DatabaseHelper(this);
         recyclerView = findViewById(R.id.recyclerview);
         searchBar = findViewById(R.id.search_bar);
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
 
         recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
 
-
-
-        productList = new ArrayList<>();
-        productList.add(new Product("Fortune Sunflower", R.drawable.fortune, "₹156", "MRP ₹190", "1 l"));
-        productList.add(new Product("Amul taaza Milk(Pouch)", R.drawable.amul_milk, "₹28", "MRP ₹30", "500ml"));
-        productList.add(new Product("Onion", R.drawable.onion, "₹83", "MRP ₹111", "1 kg"));
-        productList.add(new Product("Coconut", R.drawable.coconut, "₹89", "MRP ₹119", "1 "));
-        productList.add(new Product("Amul Butter", R.drawable.amul_butter, "₹60", "MRP ₹90", "50 gm"));
-        productList.add(new Product("Coriander", R.drawable.corianderc, "₹18", "MRP ₹24", "1 "));
-
-
-        filteredList = new ArrayList<>(productList);
-        productAdapter = new ProductAdapter(this, filteredList);
-        recyclerView.setAdapter(productAdapter);
-
+        loadProducts();
 
         searchBar.addTextChangedListener(new TextWatcher() {
             @Override
@@ -74,14 +61,12 @@ public class ProductPage extends AppCompatActivity {
             public void afterTextChanged(Editable s) {}
         });
 
-
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 int itemId = item.getItemId();
 
                 if (itemId == R.id.nav_back) {
-                    startActivity(new Intent(ProductPage.this, ProductPage.class));
                     return true;
                 } else if (itemId == R.id.nav_categories) {
                     startActivity(new Intent(ProductPage.this, CategoryActivity.class));
@@ -97,9 +82,7 @@ public class ProductPage extends AppCompatActivity {
             }
         });
 
-
         profileIcon = findViewById(R.id.profile);
-
         profileIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -107,7 +90,34 @@ public class ProductPage extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+    }
 
+    private void loadProducts() {
+        if (NetworkUtils.isNetworkAvailable(this)) {
+            // Online: Load from "Server" (Hardcoded for now) and Cache
+            productList = new ArrayList<>();
+            productList.add(new Product("Fortune Sunflower", R.drawable.fortune, "₹156", "MRP ₹190", "1 l"));
+            productList.add(new Product("Amul taaza Milk(Pouch)", R.drawable.amul_milk, "₹28", "MRP ₹30", "500ml"));
+            productList.add(new Product("Onion", R.drawable.onion, "₹83", "MRP ₹111", "1 kg"));
+            productList.add(new Product("Coconut", R.drawable.coconut, "₹89", "MRP ₹119", "1 "));
+            productList.add(new Product("Amul Butter", R.drawable.amul_butter, "₹60", "MRP ₹90", "50 gm"));
+            productList.add(new Product("Coriander", R.drawable.corianderc, "₹18", "MRP ₹24", "1 "));
+            
+            dbHelper.cacheProducts(productList);
+            Toast.makeText(this, "Loading products online...", Toast.LENGTH_SHORT).show();
+        } else {
+            // Offline: Load from SQLite Cache
+            productList = dbHelper.getCachedProducts();
+            if (productList.isEmpty()) {
+                Toast.makeText(this, "No internet and no cached data!", Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(this, "Offline Mode: Showing cached products", Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        filteredList = new ArrayList<>(productList);
+        productAdapter = new ProductAdapter(this, filteredList);
+        recyclerView.setAdapter(productAdapter);
     }
 
     private void filterProducts(String query) {
@@ -123,6 +133,4 @@ public class ProductPage extends AppCompatActivity {
         }
         productAdapter.notifyDataSetChanged();
     }
-
-
 }

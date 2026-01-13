@@ -1,23 +1,36 @@
 package sourav.sourav.zepto;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.text.TextUtils;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.messaging.FirebaseMessaging;
+
 import sourav.sourav.zepto.R;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String TAG = "MAIN_ACTIVITY";
     public EditText phoneInput;
     public Button continueButton;
 
@@ -25,6 +38,39 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        askNotificationPermission();
+
+        // Get FCM Token
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(new OnCompleteListener<String>() {
+                    @Override
+                    public void onComplete(@NonNull Task<String> task) {
+                        if (!task.isSuccessful()) {
+                            Log.w(TAG, "Fetching FCM registration token failed", task.getException());
+                            return;
+                        }
+
+                        // Get new FCM registration token
+                        String token = task.getResult();
+                        Log.d(TAG, "FCM Token: " + token);
+                        // Aap yahan toast bhi dikha sakte hain testing ke liye
+                        // Toast.makeText(MainActivity.this, "Token generated", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+        // Subscribe to promotions topic
+        FirebaseMessaging.getInstance().subscribeToTopic("promotions")
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        String msg = "Subscribed to promotions";
+                        if (!task.isSuccessful()) {
+                            msg = "Subscribe failed";
+                        }
+                        Log.d(TAG, msg);
+                    }
+                });
 
 
         phoneInput = findViewById(R.id.phoneInput);
@@ -63,5 +109,26 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
+    }
+
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    Toast.makeText(this, "Notifications allowed", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "Notifications denied", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+    private void askNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) ==
+                    PackageManager.PERMISSION_GRANTED) {
+                // Permission already granted
+            } else {
+                // Directly ask for the permission
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+            }
+        }
     }
 }

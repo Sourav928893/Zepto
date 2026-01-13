@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -33,20 +34,28 @@ public class CartActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(cartAdapter);
 
-        int totalAmount = calculateTotal(); // Calculate total once and store it
+        calculateTotal();
 
         btnCheckout.setOnClickListener(v -> {
-
-            Intent intent = new Intent(CartActivity.this, PaymentActivity.class);
-            intent.putExtra("TOTAL_AMOUNT", totalAmount);
-            startActivity(intent);
+            if (cartItems.isEmpty()) {
+                Toast.makeText(CartActivity.this, "Your cart is empty. Add products to continue.", Toast.LENGTH_SHORT).show();
+            } else {
+                int totalAmount = calculateTotal();
+                Intent intent = new Intent(CartActivity.this, PaymentActivity.class);
+                intent.putExtra("TOTAL_AMOUNT", totalAmount);
+                startActivity(intent);
+            }
         });
     }
 
     private int calculateTotal() {
         int total = 0;
         for (Product product : cartItems) {
-            total += Integer.parseInt(product.getPrice().replace("₹", ""));
+            try {
+                total += Integer.parseInt(product.getPrice().replace("₹", "").trim());
+            } catch (NumberFormatException e) {
+                // Ignore invalid numbers
+            }
         }
         tvTotalPrice.setText("Total: ₹" + total);
         return total;

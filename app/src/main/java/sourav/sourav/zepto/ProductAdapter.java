@@ -1,6 +1,7 @@
 package sourav.sourav.zepto;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Paint;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -48,7 +49,19 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         holder.tvQuantity.setText(product.getQuantity());
         holder.imageView.setImageResource(product.getImageResId());
 
+        // Product Click for Details Page
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(mContext, ProductDetailActivity.class);
+            intent.putExtra("name", product.getName());
+            intent.putExtra("image", product.getImageResId());
+            intent.putExtra("price", product.getPrice());
+            intent.putExtra("mrp", product.getMrp());
+            intent.putExtra("qty", product.getQuantity());
+            mContext.startActivity(intent);
+        });
+
         holder.btnAddToCart.setOnClickListener(v -> {
+            CartManager.getInstance().addToCart(product);
             holder.btnAddToCart.setVisibility(View.GONE);
             holder.cartContainer.setVisibility(View.VISIBLE);
         });
@@ -72,17 +85,6 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
                 holder.btnAddToCart.setVisibility(View.VISIBLE);
             }
         });
-
-        holder.btnAddToCart.setOnClickListener(v -> {
-
-            CartManager.getInstance().addToCart(product);
-
-
-            holder.btnAddToCart.setVisibility(View.GONE);
-            holder.cartContainer.setVisibility(View.VISIBLE);
-        });
-
-
     }
 
 

@@ -1,11 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
-    <color name="pink">#EC407B</color>
-    <color name="grey">#777072</color>
-    <color name="cream">#D6AB77</color>
-    <color name="red">#ED0C26</color>
-    <color name="yellow">#CDDC39</color>
-    <color name="green">#103A12</color>
+    <!-- Primary Brand Colors -->
+    <color name="zepto_purple">#3C006B</color>
+    <color name="zepto_pink">#FF3B6B</color>
+    <color name="zepto_light_purple">#F3E5F5</color>
+    
+    <!-- Status Colors -->
+    <color name="status_pending">#FFB300</color>
+    <color name="status_shipped">#1E88E5</color>
+    <color name="status_delivered">#43A047</color>
+    <color name="status_offline">#757575</color>
+
+    <!-- UI Colors -->
+    <color name="background_white">#F8F9FA</color>
+    <color name="text_main">#212121</color>
+    <color name="text_secondary">#757575</color>
+    <color name="divider_gray">#E0E0E0</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="green">#4CAF50</color>
+    <color name="yellow">#FFEB3B</color>
+    <color name="grey">#9E9E9E</color>
+    <color name="cream">#FFFDD0</color>
+
+    <color name="red">#FF0000</color>
+    <color name="pink">#FFC0CB</color>
 </resources>
